@@ -188,6 +188,7 @@ Schema per item:
   "signal": "EARLY | CONFIRMED",
   "sources_count": 1,
   "source": "primary source name",
+  "source_headline": "exact original headline of the article that triggered this item — copy verbatim",
   "link": "primary article URL",
   "language": "original language of primary source",
   "credibility": "HIGH | MEDIUM | LOW",
@@ -379,6 +380,12 @@ def call_groq(groq_api_key: str, articles: list) -> list:
         return []
 
     logging.info(f"Groq returned {len(result)} transfer item(s).")
+    for i, item in enumerate(result, 1):
+        logging.info(
+            f"[Groq item {i}] player={item.get('player')} type={item.get('type')} "
+            f"urgency={item.get('urgency')} source_headline={item.get('source_headline','')!r} "
+            f"link={item.get('link','')[:80]}"
+        )
     return result
 
 
@@ -477,6 +484,7 @@ def format_telegram_message(item: dict, player_card: str = "", youtube_url: str 
     signal = item.get("signal", "")
     credibility = item.get("credibility", "")
     source_name = item.get("source", "Unknown")
+    source_headline = item.get("source_headline", "")
     link = item.get("link", "")
     timestamp = item.get("timestamp", "")
     player = item.get("player")
@@ -497,6 +505,7 @@ def format_telegram_message(item: dict, player_card: str = "", youtube_url: str 
         f"{RTL}אמינות: `{cred_str}`",
         f"{RTL}דחיפות: {urgency}/5",
         f"{RTL}מקור: [{source_name}]({link})",
+        f"{RTL}📰 כותרת מקורית: _{source_headline}_" if source_headline else None,
         f"{RTL}זמן: {timestamp}",
     ]
 
