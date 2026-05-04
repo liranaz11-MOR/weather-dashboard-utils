@@ -171,6 +171,8 @@ You receive a list of raw news articles. Your task:
    - Match reports, scores, standings with no transfer angle
    - Pure interviews with no transfer news
    - Stadium, finance, management news with no player transfer angle
+   - Articles about FORMER Maccabi Haifa players mentioned only in historical context ("former Maccabi Haifa player", "ex-Maccabi Haifa", "שחקן לשעבר") with NO new transfer link to Maccabi Haifa — these are NOT transfer news
+   - Any article where the player's connection to Maccabi Haifa is in the PAST tense only, with no indication of a NEW deal, interest, or negotiation involving Maccabi Haifa now
 
 4. If multiple articles cover the same story, merge into ONE item. Set signal=CONFIRMED only if 2+ independent sources confirm.
 
@@ -199,6 +201,9 @@ Field rules:
 - credibility: HIGH=known journalist/major outlet, MEDIUM=regional sports media, LOW=anonymous/unverified
 - urgency: 5=official announcement, 4=deal agreed, 3=advanced talks, 2=early interest reported, 1=vague unverified link
 - Do NOT downgrade urgency just because it is unconfirmed — an early scoop from a credible journalist is urgency=3 even if unconfirmed
+
+CRITICAL — Former player filter:
+If a player is described as a "former", "ex-", "לשעבר", "אקס" Maccabi Haifa player, and the article is about their current club or career ELSEWHERE with no active link to Maccabi Haifa now — DO NOT include it. Only include if there is a NEW and ACTIVE transfer connection to Maccabi Haifa in the present tense.
 """
 
 
