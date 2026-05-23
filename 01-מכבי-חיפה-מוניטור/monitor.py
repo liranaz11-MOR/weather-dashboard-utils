@@ -307,7 +307,7 @@ def fetch_all_feeds() -> list:
             articles.append({
                 "title": title,
                 "link": link,
-                "summary": summary[:500],
+                "summary": summary[:200],
                 "published": published,
                 "source": source,
                 "feed_label": label,
@@ -338,10 +338,11 @@ def build_prompt(articles: list) -> str:
     return "\n".join(lines)
 
 
-def call_groq(groq_api_key: str, articles: list) -> list:
-    if not articles:
-        return []
+GROQ_BATCH_SIZE = 10  # מקסימום כתבות לבקשה אחת — למנוע 413
 
+
+def _call_groq_single(groq_api_key: str, articles: list) -> list:
+    """שולח אצווה אחת ל-Groq ומחזיר רשימת פריטים."""
     headers = {
         "Authorization": f"Bearer {groq_api_key}",
         "Content-Type": "application/json",
@@ -354,7 +355,6 @@ def call_groq(groq_api_key: str, articles: list) -> list:
             {"role": "user", "content": build_prompt(articles)},
         ],
     }
-
     try:
         resp = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=30)
         resp.raise_for_status()
@@ -379,14 +379,33 @@ def call_groq(groq_api_key: str, articles: list) -> list:
         logging.error("Groq response is not a JSON array.")
         return []
 
-    logging.info(f"Groq returned {len(result)} transfer item(s).")
-    for i, item in enumerate(result, 1):
+    return result
+
+
+def call_groq(groq_api_key: str, articles: list) -> list:
+    if not articles:
+        return []
+
+    # חלוקה לאצוות כדי למנוע 413 Payload Too Large
+    batches = [articles[i:i + GROQ_BATCH_SIZE] for i in range(0, len(articles), GROQ_BATCH_SIZE)]
+    logging.info(f"Sending {len(articles)} articles to Groq in {len(batches)} batch(es).")
+
+    all_results = []
+    for idx, batch in enumerate(batches, 1):
+        logging.info(f"Groq batch {idx}/{len(batches)} — {len(batch)} articles.")
+        items = _call_groq_single(groq_api_key, batch)
+        all_results.extend(items)
+        if idx < len(batches):
+            time.sleep(3)  # מניעת Rate Limit (429) בין אצוות
+
+    logging.info(f"Groq returned {len(all_results)} transfer item(s) total.")
+    for i, item in enumerate(all_results, 1):
         logging.info(
             f"[Groq item {i}] player={item.get('player')} type={item.get('type')} "
             f"urgency={item.get('urgency')} source_headline={item.get('source_headline','')!r} "
             f"link={item.get('link','')[:80]}"
         )
-    return result
+    return all_results
 
 
 # ---------------------------------------------------------------------------
