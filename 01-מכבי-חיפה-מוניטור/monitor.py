@@ -147,6 +147,10 @@ RSS_FEEDS = [
     {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa&hl=az&gl=AZ&ceid=AZ:az",               "label": "AZ-general"},
     # --- Armenian ---
     {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa&hl=hy&gl=AM&ceid=AM:hy",               "label": "AM-general"},
+    # --- Official Maccabi Haifa website (WordPress RSS) ---
+    {"url": "https://www.maccabi-haifa.co.il/feed/",                                                     "label": "OFFICIAL-site"},
+    # --- Google News filtered to official site ---
+    {"url": "https://news.google.com/rss/search?q=site:maccabi-haifa.co.il&hl=iw&gl=IL&ceid=IL:iw",    "label": "OFFICIAL-gnews"},
 ]
 
 SYSTEM_PROMPT = """You are a football transfer intelligence system for Maccabi Haifa FC.
