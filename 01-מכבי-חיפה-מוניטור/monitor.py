@@ -44,13 +44,6 @@ TM_HEADERS = {
 }
 
 RSS_FEEDS = [
-    # --- Hebrew (כולל פיד כללי שתופס כל כתבה) ---
-    {"url": "https://news.google.com/rss/search?q=%D7%9E%D7%9B%D7%91%D7%99+%D7%97%D7%99%D7%A4%D7%94&hl=iw&gl=IL&ceid=IL:iw",                                          "label": "HE-general"},
-    {"url": "https://news.google.com/rss/search?q=%D7%9E%D7%9B%D7%91%D7%99+%D7%97%D7%99%D7%A4%D7%94+%D7%94%D7%A2%D7%91%D7%A8%D7%94&hl=iw&gl=IL&ceid=IL:iw",        "label": "HE-transfer"},
-    {"url": "https://news.google.com/rss/search?q=%D7%9E%D7%9B%D7%91%D7%99+%D7%97%D7%99%D7%A4%D7%94+%D7%97%D7%AA%D7%99%D7%9E%D7%94&hl=iw&gl=IL&ceid=IL:iw",         "label": "HE-signing"},
-    {"url": "https://news.google.com/rss/search?q=%D7%9E%D7%9B%D7%91%D7%99+%D7%97%D7%99%D7%A4%D7%94+%D7%9E%D7%AA%D7%A2%D7%A0%D7%99%D7%99%D7%A0%D7%AA&hl=iw&gl=IL&ceid=IL:iw", "label": "HE-interested"},
-    {"url": "https://news.google.com/rss/search?q=%D7%9E%D7%9B%D7%91%D7%99+%D7%97%D7%99%D7%A4%D7%94+%D7%99%D7%A2%D7%93&hl=iw&gl=IL&ceid=IL:iw",                      "label": "HE-target"},
-    {"url": "https://news.google.com/rss/search?q=%D7%9E%D7%9B%D7%91%D7%99+%D7%97%D7%99%D7%A4%D7%94+%D7%9E%D7%95%22%D7%9E&hl=iw&gl=IL&ceid=IL:iw",                   "label": "HE-talks"},
     # --- English (both directions) ---
     {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfer&hl=en&gl=US&ceid=US:en",      "label": "EN-transfer"},
     {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+signing&hl=en&gl=US&ceid=US:en",       "label": "EN-signing"},
