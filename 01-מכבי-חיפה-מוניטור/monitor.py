@@ -44,41 +44,71 @@ TM_HEADERS = {
 }
 
 RSS_FEEDS = [
-    # --- English — transfer keywords only ---
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfer&hl=en&gl=US&ceid=US:en",                  "label": "EN-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+signing&hl=en&gl=US&ceid=US:en",                   "label": "EN-signing"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+interested&hl=en&gl=US&ceid=US:en",                "label": "EN-interested"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+target&hl=en&gl=US&ceid=US:en",                    "label": "EN-target"},
-    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%22interested+in%22&hl=en&gl=US&ceid=US:en", "label": "EN-world-interested"},
-    {"url": "https://news.google.com/rss/search?q=%22from+Maccabi+Haifa%22&hl=en&gl=US&ceid=US:en",                "label": "EN-from-haifa"},
-    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%22linked%22&hl=en&gl=US&ceid=US:en",        "label": "EN-linked"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+MLS&hl=en&gl=US&ceid=US:en",                       "label": "EN-MLS"},
-    # --- Spanish (Argentina, Spain) — transfer keywords only ---
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+fichaje&hl=es&gl=ES&ceid=ES:es",                   "label": "ES-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+interesa&hl=es&gl=ES&ceid=ES:es",                  "label": "ES-interested"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+fichaje&hl=es&gl=AR&ceid=AR:es",                   "label": "AR-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+interesa&hl=es&gl=AR&ceid=AR:es",                  "label": "AR-interested"},
-    # --- French — transfer keywords only ---
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfert&hl=fr&gl=FR&ceid=FR:fr",                 "label": "FR-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+piste&hl=fr&gl=FR&ceid=FR:fr",                     "label": "FR-target"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfert&hl=fr&gl=SN&ceid=SN:fr",                 "label": "SN-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfert&hl=fr&gl=CM&ceid=CM:fr",                 "label": "CM-transfer"},
-    # --- Serbian / Croatian / Bosnian — transfer keywords only ---
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfer&hl=sr&gl=RS&ceid=RS:sr",                  "label": "SR-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfer&hl=hr&gl=HR&ceid=HR:hr",                  "label": "HR-transfer"},
-    # --- Portuguese (Brazil) — transfer keywords only ---
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfer&hl=pt-BR&gl=BR&ceid=BR:pt-419",           "label": "BR-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+interesse&hl=pt-BR&gl=BR&ceid=BR:pt-419",          "label": "BR-interested"},
-    # --- German / Italian — transfer keywords only ---
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+Transfer&hl=de&gl=DE&ceid=DE:de",                  "label": "DE-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+trasferimento&hl=it&gl=IT&ceid=IT:it",             "label": "IT-transfer"},
-    # --- Turkish — transfer keyword only ---
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfer&hl=tr&gl=TR&ceid=TR:tr",                  "label": "TR-transfer"},
-    # --- Ukrainian / Polish — transfer keywords only ---
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfer&hl=uk&gl=UA&ceid=UA:uk",                  "label": "UA-transfer"},
-    {"url": "https://news.google.com/rss/search?q=Maccabi+Haifa+transfer&hl=pl&gl=PL&ceid=PL:pl",                  "label": "PL-transfer"},
-    # --- Official Maccabi Haifa website — direct RSS (bypasses Groq) ---
-    {"url": "https://www.maccabi-haifa.co.il/feed/",                                                                "label": "OFFICIAL-site"},
+    # ── English ──────────────────────────────────────────────────────────────
+    # signing / arrival
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfer+OR+signing+OR+sign+OR+signs+OR+signed+OR+joins+OR+join%29&hl=en&gl=US&ceid=US:en",
+     "label": "EN-sign"},
+    # interest / pursuit
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28interested+OR+interest+OR+keen+OR+want+OR+wants+OR+target+OR+tracking+OR+monitoring+OR+pursuit%29&hl=en&gl=US&ceid=US:en",
+     "label": "EN-interest"},
+    # deal mechanics
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28bid+OR+offer+OR+deal+OR+loan+OR+linked+OR+approach+OR+negotiations+OR+contract+OR+agreement+OR+move%29&hl=en&gl=US&ceid=US:en",
+     "label": "EN-deal"},
+    # departure
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28departure+OR+leaves+OR+departs+OR+exit+OR+sold+OR+released+OR+from+Maccabi+Haifa%29&hl=en&gl=US&ceid=US:en",
+     "label": "EN-out"},
+    # MLS / North America angle
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28MLS+OR+NYCFC+OR+Inter+Miami+OR+LA+Galaxy%29&hl=en&gl=US&ceid=US:en",
+     "label": "EN-MLS"},
+
+    # ── Spanish — Spain + Argentina ──────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28fichaje+OR+interesa+OR+interesado+OR+quiere+OR+oferta+OR+traspaso+OR+prestamo+OR+negocia+OR+acuerdo+OR+firma+OR+vinculado+OR+seguimiento+OR+contrata+OR+cedido%29&hl=es&gl=ES&ceid=ES:es",
+     "label": "ES-all"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28fichaje+OR+interesa+OR+interesado+OR+quiere+OR+oferta+OR+traspaso+OR+prestamo+OR+negocia+OR+acuerdo+OR+firma+OR+vinculado%29&hl=es&gl=AR&ceid=AR:es",
+     "label": "AR-all"},
+
+    # ── French — France + Senegal + Cameroon ────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfert+OR+int%C3%A9ress%C3%A9+OR+veut+OR+offre+OR+n%C3%A9gocie+OR+accord+OR+signe+OR+pr%C3%AAt+OR+piste+OR+recrute+OR+cible+OR+arrive+OR+part%29&hl=fr&gl=FR&ceid=FR:fr",
+     "label": "FR-all"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfert+OR+int%C3%A9ress%C3%A9+OR+offre+OR+accord+OR+piste+OR+recrute%29&hl=fr&gl=SN&ceid=SN:fr",
+     "label": "SN-all"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfert+OR+int%C3%A9ress%C3%A9+OR+offre+OR+accord+OR+piste%29&hl=fr&gl=CM&ceid=CM:fr",
+     "label": "CM-all"},
+
+    # ── Serbian ──────────────────────────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfer+OR+poja%C4%8Danje+OR+zainteresovan+OR+pregovori+OR+posudba+OR+ugovor+OR+dolazi+OR+odlazi+OR+potpisuje%29&hl=sr&gl=RS&ceid=RS:sr",
+     "label": "SR-all"},
+
+    # ── Croatian ─────────────────────────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfer+OR+poja%C4%8Danje+OR+zainteresiran+OR+pregovori+OR+posudba+OR+ugovor+OR+dolazi+OR+odlazi%29&hl=hr&gl=HR&ceid=HR:hr",
+     "label": "HR-all"},
+
+    # ── Portuguese — Brazil ──────────────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfer+OR+interesse+OR+contrata+OR+refor%C3%A7o+OR+proposta+OR+negocia%C3%A7%C3%A3o+OR+empr%C3%A9stimo+OR+acordo+OR+assina%29&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+     "label": "BR-all"},
+
+    # ── German ───────────────────────────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28Transfer+OR+Interesse+OR+interessiert+OR+Angebot+OR+Verhandlung+OR+Leihe+OR+Wechsel+OR+verpflichtet+OR+Ablöse%29&hl=de&gl=DE&ceid=DE:de",
+     "label": "DE-all"},
+
+    # ── Italian ──────────────────────────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28trasferimento+OR+interesse+OR+interessato+OR+offerta+OR+trattativa+OR+prestito+OR+accordo+OR+firma+OR+acquisto+OR+cessione%29&hl=it&gl=IT&ceid=IT:it",
+     "label": "IT-all"},
+
+    # ── Turkish ──────────────────────────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfer+OR+ilgileniyor+OR+teklif+OR+anla%C5%9Fma+OR+kiral%C4%B1k+OR+imzalad%C4%B1+OR+ayr%C4%B1l%C4%B1yor%29&hl=tr&gl=TR&ceid=TR:tr",
+     "label": "TR-all"},
+
+    # ── Ukrainian ────────────────────────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfer+OR+%D1%82%D1%80%D0%B0%D0%BD%D1%81%D1%84%D0%B5%D1%80+OR+%D1%96%D0%BD%D1%82%D0%B5%D1%80%D0%B5%D1%81+OR+%D0%BF%D0%B5%D1%80%D0%B5%D0%B3%D0%BE%D0%B2%D0%BE%D1%80%D0%B8+OR+%D0%BE%D1%80%D0%B5%D0%BD%D0%B4%D0%B0%29&hl=uk&gl=UA&ceid=UA:uk",
+     "label": "UA-all"},
+
+    # ── Polish ───────────────────────────────────────────────────────────────
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfer+OR+zainteresowanie+OR+oferta+OR+negocjacje+OR+wypo%C5%BCyczenie+OR+umowa%29&hl=pl&gl=PL&ceid=PL:pl",
+     "label": "PL-all"},
+
+    # ── Official Maccabi Haifa website — direct RSS (bypasses Groq) ──────────
+    {"url": "https://www.maccabi-haifa.co.il/feed/",                            "label": "OFFICIAL-site"},
 ]
 
 SYSTEM_PROMPT = """You are a football transfer intelligence system for Maccabi Haifa FC.
