@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/**)",
+      "WebSearch",
+      "Bash(pip install:*)",
+      "Bash(python monitor.py)",
+      "Bash(copy \"c:\\\\Users\\\\user\\\\Desktop\\\\קלוד פיננסי\\\\.env.example\" \"c:\\\\Users\\\\user\\\\Desktop\\\\קלוד פיננסי\\\\.env\")",
+      "Bash(python -c ':*)",
+      "Bash(\\\\u05db\\\\u05e0\\\\u05d9\\\\u05e1\\\\u05d4 \\\\u2b05\\\\ufe0f)",
+      "Bash(\\\\u05de\\\\u05d0\\\\u05d5\\\\u05e9\\\\u05e8 \\\\u2705)",
+      "Bash(\\\\u05d1\\\\u05d9\\\\u05e0\\\\u05d5\\\\u05e0\\\\u05d9\\\\u05ea)",
+      "Read(//c/Users/user/.claude/**)",
+      "Bash(npm install:*)",
+      "Bash(railway --version)",
+      "Bash(powershell -Command ' *)",
+      "Bash(grep -o 'function [a-zA-Z_$][a-zA-Z0-9_$]*' \"c:\\\\Users\\\\user\\\\Desktop\\\\קלוד פיננסי\\\\טמפלייט תחקיר -05\\\\פורמט עבודה מוכן -טמפלייט תחקיר.html\")",
+      "Read(//c/Users/user/Desktop/���� ������/**)",
+      "Bash(gh run *)",
+      "PowerShell(gh run list --repo liranaz11-MOR/haifa-monitor --limit 10 2>&1)",
+      "WebFetch(domain:www.maccabi-haifa.co.il)",
+      "Bash(python -c ' *)",
+      "Bash(python -c \"import requests; r=requests.get\\('https://www.maccabi-haifa.co.il/feed', headers={'User-Agent':'Mozilla/5.0'}, timeout=10\\); print\\(r.status_code, r.headers.get\\('Content-Type',''\\)[:80], r.text[:300]\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(Get-ChildItem \"c:\\\\Users\\\\user\\\\Desktop\\\\קלוד פיננסי\\\\02-לוטו-פיס\\\\\" -Recurse | Select-Object FullName, Length)",
+      "Bash(find \"c:/Users/user/Desktop\" -name \"*לוטו*\" -o -name \"*pais*\" -o -name \"*lottery*\" 2>/dev/null | head -30)",
+      "Read(//c/Users/user/Desktop/**)",
+      "Bash(find \"c:/Users/user\" -name \"*לוטו*\" -o -name \"*lotto*\" -o -name \"*pais*\" 2>/dev/null | grep -v AppData | head -20)",
+      "Read(//c/Users/user/**)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:paisapi.azurewebsites.net)",
+      "Bash(python analyze.py)",
+      "Bash(python -X utf8 analyze.py)",
+      "Bash(python -X utf8 -c ' *)",
+      "WebFetch(domain:www.paisresults.co.il)",
+      "WebFetch(domain:lottosheli.co.il)",
+      "Bash(python -c \"import monitor; print\\('OK'\\)\")",
+      "Bash(python -c \"import monitor; print\\(f'OK — {len\\(monitor.RSS_FEEDS\\)} feeds'\\)\")",
+      "Bash(npx skills-il *)",
+      "Bash(npx skills *)"
+    ],
+    "additionalDirectories": [
+      "\\tmp",
+      "C:\\Users\\user\\.claude",
+      "c:\\Users\\user\\Desktop\\���� ������"
+    ]
+  }
+}
