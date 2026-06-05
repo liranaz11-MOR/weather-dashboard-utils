@@ -23,6 +23,10 @@ CHANNELS = [
 KEYWORDS = [
     "maccabi haifa",
     "מכבי חיפה",
+    "maccaby haifa",
+    "makabi haifa",
+    "haifa fc",
+    "haifa maccabi",
 ]
 
 MAX_HOURS = 1  # כמה שעות אחורה לסרוק בכל ריצה
