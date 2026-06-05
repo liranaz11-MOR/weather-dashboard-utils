@@ -13,14 +13,36 @@ from telethon.sessions import StringSession
 
 # ── ערוצים לניטור ────────────────────────────────────────────────────────────
 CHANNELS = [
+    # ── בינלאומיים ────────────────────────────────────────────────
     "FabrizioRomanoTG",       # Fabrizio Romano — ה-"Here We Go" הגדול
     "transfer_news_football",  # Transfer News Football — אגרגטור עולמי
-    "SkySportsNews",           # Sky Sports — מאשר עסקאות
+    "SkySportsNews",           # Sky Sports
     "BBCSport",                # BBC Sport
-    "GianlucaDiMarzio",       # Di Marzio — מתחרה איטלקי של Romano
+    "GianlucaDiMarzio",       # Di Marzio — איטלקי מתחרה של Romano
     "David_Ornstein",          # David Ornstein — The Athletic
     "florianplettenberg",      # Florian Plettenberg — Sky Germany
     "BenJacobs",               # Ben Jacobs — CBS Sports
+    # ── בלגיה 🇧🇪 (מנהל מקצועי) ──────────────────────────────────
+    "SachaTavolieri",          # Romano הבלגי — #1 בהעברות Pro League
+    "HLNSport",                # Het Laatste Nieuws — עיתון בלגי ראשי
+    "Sporza",                  # VRT ספורט — שידור לאומי פלמי
+    "RTBFSport",               # שידור לאומי צרפתי-בלגי
+    # ── הולנד 🇳🇱 (מנהל מקצועי) ──────────────────────────────────
+    "MikeVerweij",             # De Telegraaf — עיתונאי אייאקס #1
+    "VoetbalInternational",    # VI — מגזין הכדורגל ההולנדי הגדול
+    "NOSSport",                # NOS — שידור לאומי הולנד
+    "RikElfrink",              # De Telegraaf — עיתונאי PSV
+    # ── ספרד / איטליה / צרפת / גרמניה ────────────────────────────
+    "MatteoMorettoRM",         # Matteo Moretto — ספרד
+    "TuttoMercatoWeb",         # TMW — איטליה
+    "lequipe",                 # L'Equipe — צרפת
+    "kicker_news",             # Kicker — גרמניה
+    # ── בלקן / מזרח אירופה ────────────────────────────────────────
+    "SportKlub",               # SportKlub — סרביה/קרואטיה/בוסניה
+    "MozzartSport",            # Mozzart Sport — סרביה
+    "transfery_bg",            # בולגריה
+    # ── טורקיה ────────────────────────────────────────────────────
+    "YagizSabuncuoglu",        # עיתונאי העברות #1 בטורקיה
 ]
 
 # ── מילות חיפוש ──────────────────────────────────────────────────────────────
