@@ -179,6 +179,14 @@ RSS_FEEDS = [
      "label": "GH-all"},
 
     # ═══════════════════════════════════════════════════════════════
+    # TRANSFERMARKT — Google News targeting transfermarkt.com
+    # ═══════════════════════════════════════════════════════════════
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Atransfermarkt.com&hl=en&gl=US&ceid=US:en",
+     "label": "TRANSFERMARKT"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+%28transfer+OR+signing+OR+interested+OR+linked+OR+rumour%29+site%3Atransfermarkt.com&hl=en&gl=US&ceid=US:en",
+     "label": "TRANSFERMARKT-transfers"},
+
+    # ═══════════════════════════════════════════════════════════════
     # Official Maccabi Haifa website — direct RSS (bypasses Groq)
     # ═══════════════════════════════════════════════════════════════
     {"url": "https://www.maccabi-haifa.co.il/feed/",                            "label": "OFFICIAL-site"},
