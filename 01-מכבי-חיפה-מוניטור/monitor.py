@@ -187,6 +187,52 @@ RSS_FEEDS = [
      "label": "TRANSFERMARKT-transfers"},
 
     # ═══════════════════════════════════════════════════════════════
+    # GOAL.COM — עולמי, כמה שפות
+    # ═══════════════════════════════════════════════════════════════
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Agoal.com&hl=en&gl=US&ceid=US:en",
+     "label": "GOAL-EN"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Agoal.com&hl=es&gl=ES&ceid=ES:es",
+     "label": "GOAL-ES"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Agoal.com&hl=fr&gl=FR&ceid=FR:fr",
+     "label": "GOAL-FR"},
+
+    # ═══════════════════════════════════════════════════════════════
+    # 90MIN — ממוקד שמועות והעברות
+    # ═══════════════════════════════════════════════════════════════
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3A90min.com&hl=en&gl=US&ceid=US:en",
+     "label": "90MIN"},
+
+    # ═══════════════════════════════════════════════════════════════
+    # CALCIOMERCATO — איטליה, שמועות מוקדמות
+    # ═══════════════════════════════════════════════════════════════
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Acalciomercato.com&hl=it&gl=IT&ceid=IT:it",
+     "label": "CALCIOMERCATO"},
+
+    # ═══════════════════════════════════════════════════════════════
+    # AFRICA — אתרי ספורט אפריקאיים
+    # ═══════════════════════════════════════════════════════════════
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Aghanasoccernet.com&hl=en&gl=GH&ceid=GH:en",
+     "label": "GHANASOCCERNET"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Asupersport.com&hl=en&gl=ZA&ceid=ZA:en",
+     "label": "SUPERSPORT-AF"},
+
+    # ═══════════════════════════════════════════════════════════════
+    # SOUTH AMERICA — ברזיל וארגנטינה
+    # ═══════════════════════════════════════════════════════════════
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Agloboesporte.globo.com&hl=pt&gl=BR&ceid=BR:pt",
+     "label": "GLOBOESPORTE-BR"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Aole.com.ar&hl=es&gl=AR&ceid=AR:es",
+     "label": "OLE-AR"},
+
+    # ═══════════════════════════════════════════════════════════════
+    # THE GUARDIAN + SKY SPORTS — ישיר לאתר
+    # ═══════════════════════════════════════════════════════════════
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Aguardian.com&hl=en&gl=GB&ceid=GB:en",
+     "label": "GUARDIAN"},
+    {"url": "https://news.google.com/rss/search?q=%22Maccabi+Haifa%22+site%3Askysports.com&hl=en&gl=GB&ceid=GB:en",
+     "label": "SKYSPORTS-SITE"},
+
+    # ═══════════════════════════════════════════════════════════════
     # Official Maccabi Haifa website — direct RSS (bypasses Groq)
     # ═══════════════════════════════════════════════════════════════
     {"url": "https://www.maccabi-haifa.co.il/feed/",                            "label": "OFFICIAL-site"},
