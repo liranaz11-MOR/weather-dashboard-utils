@@ -334,6 +334,30 @@ def compute_hash(player: Optional[str], transfer_type: str, title: str) -> str:
     return hashlib.md5(key.encode("utf-8")).hexdigest()
 
 
+PLAYER_DEDUP_HOURS = 2
+
+def _player_seen_key(player: str) -> str:
+    return "player_" + hashlib.md5(player.lower().strip().encode()).hexdigest()
+
+def is_player_recently_sent(seen: dict, player: str) -> bool:
+    if not player:
+        return False
+    key = _player_seen_key(player)
+    if key not in seen:
+        return False
+    try:
+        dt = datetime.fromisoformat(seen[key])
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) - dt < timedelta(hours=PLAYER_DEDUP_HOURS)
+    except (ValueError, TypeError):
+        return False
+
+def mark_player_sent(seen: dict, player: str) -> None:
+    if player:
+        seen[_player_seen_key(player)] = datetime.now(timezone.utc).isoformat()
+
+
 # ---------------------------------------------------------------------------
 # RSS feed fetching
 # ---------------------------------------------------------------------------
@@ -809,6 +833,10 @@ def run_cycle(groq_api_key: str, bot_token: str, chat_id: str, youtube_api_key: 
             logging.info(f"Duplicate skipped: {title[:60]}")
             continue
 
+        if is_player_recently_sent(seen, player):
+            logging.info(f"Player dedup ({PLAYER_DEDUP_HOURS}h): {player} already sent, skipping: {title[:60]}")
+            continue
+
         # Fetch enrichment data
         player_card = fetch_player_card(player) if player else ""
         youtube_url = fetch_youtube_highlights(player, youtube_api_key) if player else ""
@@ -818,6 +846,7 @@ def run_cycle(groq_api_key: str, bot_token: str, chat_id: str, youtube_api_key: 
 
         if success:
             seen[h] = datetime.now(timezone.utc).isoformat()
+            mark_player_sent(seen, player)
             new_count += 1
             if urgency == 5:
                 had_urgent = True
