@@ -17,6 +17,10 @@ CHANNELS = [
     "transfer_news_football",  # Transfer News Football — אגרגטור עולמי
     "SkySportsNews",           # Sky Sports — מאשר עסקאות
     "BBCSport",                # BBC Sport
+    "GianlucaDiMarzio",       # Di Marzio — מתחרה איטלקי של Romano
+    "David_Ornstein",          # David Ornstein — The Athletic
+    "florianplettenberg",      # Florian Plettenberg — Sky Germany
+    "BenJacobs",               # Ben Jacobs — CBS Sports
 ]
 
 # ── מילות חיפוש ──────────────────────────────────────────────────────────────
