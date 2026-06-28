@@ -1057,6 +1057,47 @@ input, textarea, select { font-family: var(--sans); }
   border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
 }
 
+/* ─── PIN Modal ─── */
+.pin-overlay {
+  position: fixed; inset: 0; background: rgba(15,22,32,.7);
+  z-index: 3000; display: flex; align-items: center;
+  justify-content: center; padding: 16px;
+}
+.pin-box {
+  background: var(--surface); border-radius: var(--radius-lg);
+  padding: 32px 28px 24px; max-width: 320px; width: 100%;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; direction: rtl;
+}
+.pin-box .pin-icon { font-size: 28px; margin-bottom: 10px; }
+.pin-box h4 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.pin-box .pin-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.pin-input-wrap input {
+  width: 100%; padding: 11px 14px; border-radius: var(--radius);
+  border: 2px solid var(--border); font-size: 18px; text-align: center;
+  font-family: var(--sans); direction: ltr; box-sizing: border-box;
+  background: var(--surface-2); color: var(--text); outline: none;
+  letter-spacing: 3px; transition: border-color .15s;
+}
+.pin-input-wrap input:focus { border-color: var(--blue); }
+.pin-input-wrap input.pin-shake {
+  animation: pinShake .3s ease;
+  border-color: #ef4444 !important;
+}
+@keyframes pinShake {
+  0%,100%{ transform:translateX(0) }
+  20%{ transform:translateX(-6px) }
+  40%{ transform:translateX(6px) }
+  60%{ transform:translateX(-4px) }
+  80%{ transform:translateX(4px) }
+}
+.pin-error { color: #ef4444; font-size: 12px; margin-top: 8px; min-height: 18px; }
+.pin-actions { display: flex; gap: 10px; margin-top: 18px; }
+.pin-actions button { flex: 1; padding: 10px; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
+.pin-btn-ok { border: none; background: var(--blue); color: #fff; }
+.pin-btn-ok:hover { opacity: .9; }
+.pin-btn-cancel { border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text-muted); }
+
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1299,9 +1340,11 @@ select option { background: var(--surface); color: var(--text); }
         </div>
       </div></div></div></div><button onclick="addCapaRow()" style="font-size:12px;color:var(--blue);background:#fff;border:1.5px dashed var(--border);border-radius:7px;padding:6px 14px;cursor:pointer;font-family:var(--sans);margin-bottom:4px">+ הוסף פעולה</button></div>
 <div class="nav">
-  <button class="btn-back" id="btn-back" onclick="prevStep()">← חזור</button>
+  <div style="display:inline-block;cursor:pointer" onclick="handleNextBtn()">
+    <button class="btn-next" id="btn-next" style="pointer-events:none" title="">← המשך</button>
+  </div>
   <span class="nav-count" id="nav-count">5 / 7</span>
-  <button class="btn-next" id="btn-next" onclick="nextStep()" title="">המשך →</button>
+  <button class="btn-back" id="btn-back" onclick="prevStep()">חזור →</button>
 </div>
 <div id="mgr-overlay" class="mgr-overlay" style="display:none" onclick="if(event.target===this)hideManager()">
   <div class="mgr-modal">
@@ -1466,7 +1509,8 @@ const STEPS = [
   {num:7,label:"נספחים",        icon:"📎"},
   {num:8,label:"דוח מנהלים",    icon:"📊"},
 ];
-const WHY_COLORS = ["#e8edf4","#e6f0ea","#f5f0e6","#f0e6e6","#ece8f4"];
+const WHY_COLORS = ["#e8edf4","#e6f0ea","#f5f0e6","#f0e6e6","#ece8f4","#e8f4f0","#f4ece8","#eef4e8"];
+const MAX_WHYS = 8;
 
 let step = 1;
 let details = {title:"",date:"",invNum:"",commissioner:"",manager:"",team:"",summary:"",lessonLearned:"",lessonShared:""};
@@ -1476,9 +1520,9 @@ let mData = {man:[""],method:[""],measurement:[""],machine:[""],material:[""],en
 let focals = []; // [{key, factorIdx}]
 let ruledOut = [];
 let verdictSentence = "";
-let whys = ["","","","",""];
-let whyQs = ["","","","",""];
-let rootCause = "";
+let whys = [];
+let whyQs = [];
+let perFocalWhyCount = []; // number of WHY questions per focal (default 5, max MAX_WHYS)
 let rootCauseOverride = null;
 let capaRows = [];
 let effectiveness = {date:"", reviewer:"", result:"", status:"open"};
@@ -1784,9 +1828,12 @@ function renderNav(){
     next.style.display="";
     next.innerHTML="המשך →";
     // block step 3 if no focals; block step 5 if no verdict
-    const blocked=(step===3&&focals.length===0)||(step===4&&!rootCause.trim())||(step===5&&!verdictSentence.trim());
+    const step5blocked=step===5&&!allFocalsAddressed();
+    const blocked=(step===3&&focals.length===0)||(step===4&&!allRootCausesText().trim())||step5blocked;
     next.disabled=blocked;
-    next.title=blocked?(step===3?"יש לבחור לפחות גורם חשוד אחד":step===4?"יש להקליד סיבת שורש לפני המשך":"יש לכתוב קביעת סיבת שורש לפני המשך"):"";
+    next.title=blocked?(step===3?"יש לבחור לפחות גורם חשוד אחד":step===4?"יש להקליד סיבת שורש לפני המשך":""):"";
+    const warn=document.getElementById("nav-warning");
+    if(warn) warn.remove();
     document.querySelector(".done-label") && (document.querySelector(".done-label").style.display="none");
   } else {
     next.style.display="none";
@@ -1865,6 +1912,19 @@ function renderStep2(){
   <div style="background:var(--blue-dim);border:1.5px solid var(--border-soft);border-radius:8px;padding:8px 14px;margin-bottom:14px;font-size:12.5px;color:var(--blue)">
     ✏️ הגורמים שתכניס בטבלה למטה יופיעו אוטומטית על ענפי הדג בזמן אמת
   </div>
+  <div class="effect-box">
+    <div style="font-size:28px">🎯</div>
+    <div style="flex:1">
+      <label class="form-label" style="font-weight:800;color:var(--green);margin-bottom:4px">פירוט התקלה – ראש הדג</label>
+      <div style="font-size:11px;color:${effectLabel?"var(--amber)":"var(--text-muted)"};margin-bottom:5px;display:flex;align-items:center;gap:6px">
+        <span>${effectLabel?"✓ ראש הדג הוגדר":"⚠️ יש להגדיר ידנית את ראש הדג"}</span>
+        ${effectLabel?`<button onclick="effectLabel='';updateFishbone();renderCard()" style="padding:1px 8px;font-size:10.5px;border:1.5px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;color:var(--text-mid);font-family:var(--sans)">↺ איפוס</button>`:""}
+      </div>
+      <input class="form-input" style="border:1.5px solid var(--green);background:#fff" value="${h(effectLabel)}"
+        placeholder="מה התוצאה / הבעיה שצריכה להופיע בראש הדג?"
+        oninput="effectLabel=this.value;updateFishbone()"/>
+    </div>
+  </div>
   <div class="m-grid">`;
   FIVE_M.forEach(m=>{
     const factors=mData[m.key]||[""];
@@ -1915,20 +1975,7 @@ function renderStep2(){
     }
     html+=`</div>`;
   });
-  html+=`</div>
-  <div class="effect-box">
-    <div style="font-size:28px">🎯</div>
-    <div style="flex:1">
-      <label class="form-label" style="font-weight:800;color:var(--green);margin-bottom:4px">תוצאה – ראש הדג</label>
-      <div style="font-size:11px;color:${effectLabel?"var(--amber)":"var(--text-muted)"};margin-bottom:5px;display:flex;align-items:center;gap:6px">
-        <span>${effectLabel?"✓ ראש הדג הוגדר":"⚠️ יש להגדיר ידנית את ראש הדג"}</span>
-        ${effectLabel?`<button onclick="effectLabel='';updateFishbone();renderCard()" style="padding:1px 8px;font-size:10.5px;border:1.5px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;color:var(--text-mid);font-family:var(--sans)">↺ איפוס</button>`:""}
-      </div>
-      <input class="form-input" style="border:1.5px solid var(--green);background:#fff" value="${h(effectLabel)}"
-        placeholder="מה התוצאה / הבעיה שצריכה להופיע בראש הדג?"
-        oninput="effectLabel=this.value;updateFishbone()"/>
-    </div>
-  </div>`;
+  html+=`</div>`;
   return html;
 }
 
@@ -2068,9 +2115,33 @@ function clearFocalKey(k){
 }
 
 // ─── STEP 4 ──────────────────────────────────────────────
+function focalRootCause(fi){
+  const count=perFocalWhyCount[fi]||5;
+  const base=fi*MAX_WHYS;
+  for(let i=count-1;i>=0;i--){ if((whys[base+i]||'').trim()) return whys[base+i]; }
+  return '';
+}
+function allRootCausesText(){
+  return focalSummary().map((f,fi)=>focalRootCause(fi)).filter(rc=>rc.trim()).join('\n');
+}
 function onWhyInput(idx, val, fi, i){
   whys[idx]=val;
   autoSave();
+}
+function addWhyQ(fi){
+  const c=perFocalWhyCount[fi]||5;
+  if(c>=MAX_WHYS) return;
+  perFocalWhyCount[fi]=c+1;
+  const base=fi*MAX_WHYS;
+  while(whys.length<base+c+1) whys.push("");
+  while(whyQs.length<base+c+1) whyQs.push("");
+  renderCard();autoSave();
+}
+function removeWhyQ(fi){
+  const c=perFocalWhyCount[fi]||5;
+  if(c<=1) return;
+  perFocalWhyCount[fi]=c-1;
+  renderCard();autoSave();
 }
 
 function renderStep4(){
@@ -2082,29 +2153,35 @@ function renderStep4(){
     html+=`<div style="background:#faf6e6;border:1.5px solid var(--amber-dim);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber)">⚠️ יש לבחור לפחות מוקד אחד בשלב המסננת לפני שממשיכים.</div>`;
   } else {
     fs.forEach((f,fi)=>{
-      const qStart=fi*5;
-      while(whyQs.length<qStart+5) whyQs.push("");
-      while(whys.length<qStart+5) whys.push("");
+      const count=perFocalWhyCount[fi]||5;
+      const base=fi*MAX_WHYS;
+      while(whyQs.length<base+count) whyQs.push("");
+      while(whys.length<base+count) whys.push("");
       html+=`<div style="border:2px solid ${f.m?.color};border-radius:12px;padding:14px;margin-bottom:20px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
           <span style="font-size:18px">${f.m?.icon}</span>
           <span style="font-size:13px;font-weight:700;color:${f.m?.color}">${h(f.m?.label?.split("(")[0].trim())} → ${h(f.factor)}</span>
+          <div style="margin-right:auto;display:flex;gap:6px">
+            ${count>1?`<button onclick="removeWhyQ(${fi})" style="font-size:12px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-muted);cursor:pointer;font-family:var(--sans)">− שאלה</button>`:''}
+            ${count<MAX_WHYS?`<button onclick="addWhyQ(${fi})" style="font-size:12px;padding:3px 10px;border-radius:6px;border:1.5px solid ${f.m?.color};background:${f.m?.color}15;color:${f.m?.color};cursor:pointer;font-family:var(--sans);font-weight:700">+ שאלה</button>`:''}
+          </div>
         </div>`;
-      for(let i=0;i<5;i++){
-        const idx=qStart+i;
+      for(let i=0;i<count;i++){
+        const idx=base+i;
+        const isLast=(i===count-1);
         html+=`<div class="why-row" style="margin-bottom:10px">
           <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-            <div class="why-num" style="background:${WHY_COLORS[i]};color:var(--text);border-color:${f.m?.color}55">${i+1}</div>
-            ${i<4?`<div class="why-connector" style="background:${f.m?.color}44"></div>`:""}
+            <div class="why-num" style="background:${WHY_COLORS[i]||WHY_COLORS[WHY_COLORS.length-1]};color:var(--text);border-color:${f.m?.color}55">${i+1}</div>
+            ${!isLast?`<div class="why-connector" style="background:${f.m?.color}44"></div>`:""}
           </div>
           <div class="why-fields">
             <div class="why-sublabel">שאלה:</div>
             <input class="form-input" style="background:var(--surface-2);border-color:var(--border-soft)" value="${h(whyQs[idx]||'')}"
               placeholder="${i===0?'למה '+h(f.factor)+'?':'כתוב את השאלה...'}"
               oninput="whyQs[${idx}]=this.value;autoSave()"/>
-            <div class="why-sublabel">תשובה:</div>
-            <input class="form-input" style="border:2px solid ${i===4?f.m?.color:'#e2e8f0'};background:${i===4?f.m?.color+'18':'white'}" value="${h(whys[idx]||'')}"
-              placeholder="${i===4?'גורם השורש הסופי...':'מה הסיבה?'}"
+            <div class="why-sublabel">${isLast?'<span style="color:'+f.m?.color+';font-weight:800">🎯 תשובה = סיבת השורש</span>':'תשובה:'}</div>
+            <input class="form-input" style="border:2px solid ${isLast?f.m?.color:'#e2e8f0'};background:${isLast?f.m?.color+'18':'white'}" value="${h(whys[idx]||'')}"
+              placeholder="${isLast?'גורם השורש הסופי...':'מה הסיבה?'}"
               oninput="onWhyInput(${idx},this.value,${fi},${i})"/>
           </div>
         </div>`;
@@ -2113,30 +2190,13 @@ function renderStep4(){
     });
   }
 
-  const rcDisplayVal=rootCause||"";
-  const rcIsSet=Boolean(rootCause && rootCause.trim());
-  if(!verdictSentence.trim()) verdictSentence=rcDisplayVal;
-
-  html+=`<div class="root-box">
-    <div class="root-title">🎯 סיבת השורש הסופית</div>
-    <div class="root-sub" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <span style="font-size:11.5px;color:${rcIsSet?"var(--amber)":"var(--text-muted)"}">
-        ${rcIsSet?"✏️ סיבת השורש הוזנה":"הקלד/י כאן את סיבת השורש הסופית לאחר סיום כל השאלות"}
-      </span>
-      ${rcIsSet?`<button onclick="rootCause='';rootCauseOverride=null;verdictSentence='';fieldSave();renderCard()"
-        style="padding:2px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;color:var(--text-mid);font-family:var(--sans)">↺ איפוס</button>`:""}
-    </div>
-    <textarea id="root-cause-box" rows="2" class="form-input" style="border:2px solid #fbbf24;background:var(--vd-surface);color:var(--vd-text);resize:vertical"
-      placeholder="הקלד/י כאן את סיבת השורש הסופית לאחר סיום כל השאלות"
-      oninput="rootCause=this.value;verdictSentence=this.value;renderNav();fieldSave()">${h(rcDisplayVal)}</textarea>
-  </div>`;
   return html;
 }
 
 // ─── STEP 5 ──────────────────────────────────────────────
 function renderStep5(){
   const fs=focalSummary();
-  const rc=rootCause||"";
+  const rc=allRootCausesText().replace(/\n/g,' | ')||"";
   const CAPA_TYPES=["פעולה מיידית","פעולה תיקון","פעולה מתקנת","פעולה מונעת","אחר"];
 
   // ── summary strip ──
@@ -2160,24 +2220,6 @@ function renderStep5(){
     <span style="font-size:12px;color:var(--text-muted)"><span style="color:var(--blue);font-weight:700">מתקנת</span> = טיפול בגורם השורש למניעת הישנות</span>
     <span style="color:var(--border);font-size:11px">|</span>
     <span style="font-size:12px;color:var(--text-muted)"><span style="color:var(--green);font-weight:700">מונעת</span> = מניעת הישנות בתהליכים דומים</span>
-  </div>
-
-  <div style="background:var(--surface-2);border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-    <span style="color:var(--text-muted);font-size:12px;font-weight:600;min-width:fit-content">נתיב</span>`;
-  fs.forEach((f,i)=>{
-    html+=`<span style="background:${f.m?.color}18;color:${f.m?.color};border:1px solid ${f.m?.color}44;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600">${f.m?.icon} ${h(f.m?.label?.split("(")[0].trim())} → ${h(f.factor)}</span>`;
-  });
-  if(rc) html+=`<span style="color:var(--red);font-size:12px;font-style:italic;border-right:3px solid var(--red);padding-right:8px">${h(rc)}</span>`;
-  html+=`</div>
-
-  <!-- ── Verdict ── -->
-  <div style="font-size:13px;font-weight:700;color:var(--text-mid);margin-bottom:8px">① קביעת סיבת השורש</div>
-  <div class="verdict-textarea-box" style="margin-bottom:22px">
-    <label class="form-label" style="font-weight:700;color:var(--amber);margin-bottom:6px">קביעת סיבת השורש – נגזרת ישירות מ-WHY #5</label>
-    <textarea rows="3" class="form-input" style="border:1.5px solid var(--amber);resize:vertical"
-      placeholder="כתוב את קביעת סיבת השורש לאחר השלמת ה-5WHYs..."
-      oninput="verdictSentence=this.value;renderNav();fieldSave()">${h(verdictSentence)}</textarea>
-    ${!verdictSentence.trim()?'<div style="margin-top:6px;font-size:12px;color:var(--red);font-weight:600">⚠️ שדה חובה – נדרש להמשך לשלב הנספחים</div>':""}
   </div>
 `;
 
@@ -2246,18 +2288,29 @@ function renderStep5(){
     return c;
   }
 
-  // ── Root section ──
-  html+=`<div style="background:var(--blue-dim);border:1.5px solid var(--blue);border-right:4px solid var(--blue);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
-    <span style="font-size:22px">🎯</span>
-    <div>
-      <div style="font-size:13px;font-weight:700;color:var(--blue)">גורמי סיבת השורש – תוכנית פעולה</div>
-      <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">פעולות הנגזרות ישירות מניתוח הכשל</div>
-    </div>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px">`;
-  rootIdxs.forEach(({row,ri})=>{ html+=buildCapaCard(row,ri); });
-  html+=`</div>`;
-  html+=`<button onclick="addCapaRow()" style="font-size:12px;color:var(--blue);background:#fff;border:1.5px dashed var(--border);border-radius:7px;padding:6px 14px;cursor:pointer;font-family:var(--sans);margin-bottom:4px">+ הוסף פעולה</button>`;
+  // ── Root section – grouped by focal ──
+  fs.forEach((f,fi)=>{
+    const rc=focalRootCause(fi);
+    const focalRows=capaRows.map((row,ri)=>({row,ri})).filter(({row})=>row.srcKey===f.m?.key&&row.srcFactor===(mData[f.m?.key]||[])[focals.find(fc=>fc.key===f.m?.key&&(mData[f.m?.key]||[])[fc.factorIdx]===f.factor)?.factorIdx]);
+    const isAddressed=focalRows.some(({row})=>row.desc&&row.desc.trim());
+    const sk=h(f.m?.key||'');const sf=h(f.factor||'');
+    html+=`<div style="border:2px solid ${isAddressed?f.m?.color+'44':'var(--red)'};border-radius:12px;overflow:hidden;margin-bottom:16px">
+      <div style="background:${f.m?.color};padding:10px 16px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">${f.m?.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#fff">${h(f.factor)}</div>
+          ${rc?`<div style="font-size:11.5px;color:#ffffffcc;margin-top:2px">🎯 ${h(rc)}</div>`:''}
+        </div>
+      </div>
+      <div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;background:${f.m?.color}05">`;
+    focalRows.forEach(({row,ri})=>{ html+=buildCapaCard(row,ri); });
+    html+=`<button onclick="addCapaRowForFocal('${sk}','${sf}')"
+        style="font-size:12px;color:${f.m?.color};background:#fff;border:1.5px dashed ${f.m?.color};border-radius:7px;padding:6px 14px;cursor:pointer;font-family:var(--sans);align-self:flex-start">
+        + הוסף פעולה לגורם זה
+      </button>
+      </div>
+    </div>`;
+  });
 
   // ── Secondary section (only when rows exist) ──
   if(secIdxs.length>0){
@@ -2633,9 +2686,15 @@ function renderStep8(){
       });
       rcHtml+=`</div>`;
     }
-    rcHtml+=`<textarea rows="2" class="form-input" style="resize:vertical;font-size:13.5px;font-weight:600;line-height:1.6;border-color:var(--red);background:var(--red-dim);color:var(--red)"
-      placeholder="נא הקלד גורם שורש..."
-      oninput="rootCause=this.value;verdictSentence=this.value;fieldSave()">${h(rootCause)}</textarea>`;
+    fs.forEach((f,fi)=>{
+      const mConf=FIVE_M.find(m=>m.key===f.m?.key);
+      const col=mConf?.color||"var(--text-mid)";
+      const rcVal=focalRootCause(fi);
+      rcHtml+=`<div style="margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:${col};margin-bottom:4px">${mConf?.icon||""} ${h(f.factor)} <span style="font-weight:400;color:var(--text-faint)">(WHY #5)</span></div>
+        <div style="background:var(--surface-2);border:1.5px solid ${col}44;border-radius:6px;padding:8px 12px;font-size:13px;color:var(--text)">${rcVal.trim()||`<em style="color:var(--text-faint)">טרם הוזנה תשובה ל-WHY #5</em>`}</div>
+      </div>`;
+    });
     html+=card(rcHtml,"var(--red)");
   }
 
@@ -2650,9 +2709,9 @@ function renderStep8(){
         const ri=capaRows.indexOf(r);
         const isDel=!(r.srcKey&&isFocalKey(r.srcKey));
         capaHtml+=`<div style="border:1.5px solid var(--border);border-right:4px solid ${typeColor(r.type)};border-radius:8px;padding:10px 12px;margin-bottom:8px;background:var(--surface)">
-          <div style="display:grid;grid-template-columns:auto 1fr auto auto ${isDel?'auto':''};gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+          <div style="display:grid;grid-template-columns:auto auto 1fr auto auto ${isDel?'auto':''};gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+            ${r.srcFactor?`<span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:2px 9px;white-space:nowrap">${h(r.srcFactor)}</span>`:`<span></span>`}
             <span style="background:${typeBg(r.type)};color:${typeColor(r.type)};border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;white-space:nowrap">${h(r.type)}</span>
-            ${r.srcFactor?`<span style="font-size:11px;color:var(--text-muted)">מוקד: ${h(r.srcFactor)}</span>`:`<span></span>`}
             <input class="form-input" style="font-size:12px;width:120px" placeholder="אחראי/ת"
               value="${h(r.responsible||'')}" data-capa-responsible="${ri}"
               oninput="capaRows[${ri}].responsible=this.value;fieldSave()"/>
@@ -2806,8 +2865,9 @@ function printExecSummary(){
   </tr>`).join("");
 
   const capaRows_=allCapa.map((r,i)=>`<tr style="background:${i%2===0?"#fff":"#f8fafc"}">
-    <td style="padding:7px 10px"><span style="background:${typeColor(r.type)}18;color:${typeColor(r.type)};border-radius:10px;padding:2px 9px;font-size:10.5px;font-weight:700">${esc(r.type)}</span></td>
-    <td style="padding:7px 10px;color:#1e293b;font-size:12px">${r.srcFactor?`<div style="font-size:10px;color:#64748b;margin-bottom:1px">מוקד: ${esc(r.srcFactor)}</div>`:""}${esc(r.desc)||`<em style="color:#94a3b8">טרם הוגדר</em>`}</td>
+    <td style="padding:7px 10px;font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap">${r.srcFactor?esc(r.srcFactor):`<span style="color:#94a3b8">—</span>`}</td>
+    <td style="padding:7px 10px;color:#1e293b;font-size:12px">${esc(r.desc)||`<em style="color:#94a3b8">טרם הוגדר</em>`}</td>
+    <td style="padding:7px 10px"><span style="background:${typeColor(r.type)}18;color:${typeColor(r.type)};border-radius:10px;padding:2px 9px;font-size:10.5px;font-weight:700;white-space:nowrap">${esc(r.type)}</span></td>
     <td style="padding:7px 10px;color:#475569;font-size:11px">${esc(r.responsible)||"—"}</td>
     <td style="padding:7px 10px;color:#475569;font-size:11px;white-space:nowrap">${fmtDate(r.deadline)||"—"}</td>
   </tr>`).join("");
@@ -2882,14 +2942,14 @@ ${sec.rootCause!==false?`<div class="section">
   <div class="section-head"><span class="section-head-icon">🎯</span><span class="section-head-text">ממצא עיקרי – סיבת השורש</span></div>
   <div class="section-body">
     ${fs.length>0?`<div style="margin-bottom:12px">${focalChips}</div>`:""}
-    ${rootCause?`<div class="root-cause-box">${esc(rootCause)}</div>`:`<em style="color:#94a3b8">טרם הוגדרה סיבת שורש</em>`}
+    ${allRootCausesText().trim()?focalSummary().map((f,fi)=>{const rc=focalRootCause(fi);return rc.trim()?`<div class="root-cause-box" style="margin-bottom:6px">${esc(rc)}</div>`:""}).join(""):`<em style="color:#94a3b8">טרם הוזנו תשובות ל-WHY #5</em>`}
   </div>
 </div>`:""}
 
 ${sec.capa!==false?`<div class="section">
   <div class="section-head"><span class="section-head-icon">⚙️</span><span class="section-head-text">תוכנית פעולה</span></div>
   <div class="section-body">
-    ${allCapa.length>0?`<table><thead><tr><th style="width:20%">סוג</th><th>תיאור פעולה</th><th style="width:15%">אחראי/ת</th><th style="width:12%">יעד</th></tr></thead><tbody>${capaRows_}</tbody></table>`:"<em style='color:#94a3b8'>טרם הוגדרו פעולות</em>"}
+    ${allCapa.length>0?`<table><thead><tr><th style="width:22%">מוקד</th><th>תיאור פעולה</th><th style="width:16%">סוג</th><th style="width:14%">אחראי/ת</th><th style="width:11%">יעד</th></tr></thead><tbody>${capaRows_}</tbody></table>`:"<em style='color:#94a3b8'>טרם הוגדרו פעולות</em>"}
   </div>
 </div>`:""}
 
@@ -2925,6 +2985,59 @@ function toggleCapaWhys(ri){
 function addCapaRow(){
   capaRows.push({id:capaNextId++,type:"פעולה מונעת",desc:"",responsible:"",deadline:"",srcKey:"",srcFactor:"",criteria:"",whysOpen:false,prevWhyQs:[],prevWhys:[]});
   renderCard();autoSave();
+}
+function addCapaRowForFocal(srcKey,srcFactor){
+  capaRows.push({id:capaNextId++,type:"פעולה מתקנת",desc:"",responsible:"",deadline:"",srcKey,srcFactor,criteria:"",whysOpen:false,prevWhyQs:[],prevWhys:[]});
+  renderCard();autoSave();
+}
+function allFocalsAddressed(){
+  return FIVE_M.every(m=>
+    (mData[m.key]||[]).filter(f=>f.trim()).every((f,fi)=>{
+      if(isFocalFactor(m.key,fi)) return true;
+      if(dismissedFactors[m.key+'::'+f]!==undefined) return true;
+      return isFactorClaimed(m.key,f);
+    })
+  );
+}
+function showUnaddressedPopup(){
+  const missing=[];
+  FIVE_M.forEach(m=>{
+    (mData[m.key]||[]).filter(f=>f.trim()).forEach((f,fi)=>{
+      if(isFocalFactor(m.key,fi)) return;
+      if(dismissedFactors[m.key+'::'+f]!==undefined) return;
+      if(isFactorClaimed(m.key,f)) return;
+      missing.push({icon:m.icon,label:m.label.split("(")[0].trim(),factor:f,color:m.color});
+    });
+  });
+  const overlay=document.createElement("div");
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(15,22,32,.65);z-index:4000;display:flex;align-items:center;justify-content:center;padding:20px";
+  overlay.innerHTML=`<div style="background:#fff;border-radius:14px;padding:28px 28px 22px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:var(--sans);direction:rtl">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span style="font-size:26px">⚠️</span>
+      <div>
+        <div style="font-size:17px;font-weight:800;color:#1e293b">לא ניתן להמשיך</div>
+        <div style="font-size:13px;color:#64748b;margin-top:2px">הגורמים הבאים טרם קיבלו התייחסות</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+      ${missing.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:1.5px solid ${m.color}44;background:${m.color}08">
+        <span style="font-size:16px">${m.icon}</span>
+        <div>
+          <div style="font-size:10.5px;font-weight:700;color:${m.color};text-transform:uppercase;letter-spacing:.4px">${m.label}</div>
+          <div style="font-size:13px;font-weight:600;color:#1e293b">${m.factor}</div>
+        </div>
+      </div>`).join("")}
+    </div>
+    <div style="font-size:12.5px;color:#64748b;margin-bottom:18px;padding:10px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+      יש להוסיף לתוכנית הפעולה או לסמן <strong>"לא רלוונטי"</strong> לכל גורם לפני המשך
+    </div>
+    <button onclick="this.closest('div[style*=fixed]').remove()"
+      style="width:100%;padding:10px;background:#1e293b;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)">
+      הבנתי – אחזור לטפל
+    </button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove();});
 }
 function submitCapaFromStep8(){
   const type=document.getElementById('s8ct')?.value||"פעולה מונעת";
@@ -3001,10 +3114,11 @@ function doPrint(){
     whyRows=`<tr><td colspan="3" style="padding:10px;text-align:center;color:#64748b;font-style:italic">לא מולאו WHYs</td></tr>`;
   } else {
     fs.forEach((f,fi)=>{
-      const qStart=fi*5;
+      const qBase=fi*MAX_WHYS;
+      const qCount=perFocalWhyCount[fi]||5;
       whyRows+=`<tr><td colspan="3" style="background:#0f172a;color:white;font-weight:bold;padding:10px 12px;font-size:12pt">${f.m?.label?.split("(")[0].trim()||""} → ${f.factor||""}</td></tr>`;
-      for(let i=0;i<5;i++){
-        const idx=qStart+i;
+      for(let i=0;i<qCount;i++){
+        const idx=qBase+i;
         const q=whyQs[idx]||"";
         const a=whys[idx]||"";
         if(!q&&!a) continue;
@@ -3039,7 +3153,7 @@ function doPrint(){
 <div class="verdict"><strong>גורמי מוקד שנבחרו לניתוח:</strong> ${focalLabels||"—"}</div>
 <h2>5 WHYs – ניתוח עומק</h2>
 <table style="border-collapse:collapse;width:100%"><tr><th style="width:32px">#</th><th style="width:45%">שאלה</th><th>תשובה</th></tr>${whyRows}</table>
-<div class="root-box">🎯 סיבת השורש הסופית: ${rootCauseOverride!==null?rootCauseOverride:(rootCause||"—")}</div>
+<div class="root-box">🎯 סיבת השורש הסופית: ${rootCauseOverride!==null?rootCauseOverride:(allRootCausesText().replace(/\n/g,' | ')||"—")}</div>
 <h2>⚙️ תוכנית פעולה</h2>
 <table><tr><th>סוג פעולה</th><th>תיאור</th><th>אחראי/ת</th><th>יעד סגירה</th></tr>
 ${capaRows.map(r=>`<tr><td style="font-weight:700;white-space:nowrap">${r.type}</td><td>${h(r.desc)}${r.srcFactor?`<br/><small style="color:#64748b">מוקד: ${h(r.srcFactor)}</small>`:""}</td><td>${h(r.responsible)||"—"}</td><td style="white-space:nowrap">${fmtDate(r.deadline)||"—"}</td></tr>`).join("")}</table>
@@ -3105,10 +3219,11 @@ async function doWordExport(){
     whyRows='<tr><td colspan="3">לא מולאו WHYs</td></tr>';
   } else {
     fs.forEach((f,fi)=>{
-      const qStart=fi*5;
+      const qBase=fi*MAX_WHYS;
+      const qCount=perFocalWhyCount[fi]||5;
       whyRows+=`<tr><td colspan="3" style="background:#1e293b;color:white;font-weight:bold;padding:8pt 10pt;font-size:12pt;">${f.m?.icon||''} ${f.m?.label?.split('(')[0].trim()||''} → ${f.factor||''}</td></tr>`;
-      for(let i=0;i<5;i++){
-        const idx=qStart+i;
+      for(let i=0;i<qCount;i++){
+        const idx=qBase+i;
         const q=whyQs[idx]||'';
         const a=whys[idx]||'';
         if(!q&&!a) continue;
@@ -3121,7 +3236,7 @@ async function doWordExport(){
     });
   }
   const annexRows=annexes.map((a,i)=>`<tr><td style="padding:6px 10px;border:1.5px solid #e2e8f0;text-align:center">${i+1}</td><td style="padding:6px 10px;border:1.5px solid #e2e8f0;font-weight:bold">${a.title||""}</td><td style="padding:6px 10px;border:1.5px solid #e2e8f0;color:#1d4ed8">${a.ref||""}</td><td style="padding:6px 10px;border:1.5px solid #e2e8f0">${a.notes||""}</td></tr>`).join("");
-  const rc=rootCauseOverride!==null?rootCauseOverride:(rootCause||"(טרם הוגדרה)");
+  const rc=rootCauseOverride!==null?rootCauseOverride:(allRootCausesText().replace(/\n/g,' | ')||"(טרם הוגדרה)");
   const tlRows=timeline.filter(t=>t.desc&&t.desc.trim()).map(t=>`<tr><td style="white-space:nowrap;color:#2563eb;font-family:monospace;font-size:10pt">${h(fmtTime(t.time)||"—")}</td><td>${h(t.desc)}</td><td style="white-space:nowrap;color:#64748b">${h(t.actor||"—")}</td></tr>`).join("");
   const ruledRows=ruledOut.map(k=>{const m=FIVE_M.find(x=>x.key===k);return m?`<tr><td style="font-weight:bold">${m.icon} ${m.label.split("(")[0].trim()}</td><td>${h((window._ruledReasons||{})[k]||"—")}</td></tr>`:""}).join("");
   const statusLabel=({open:"פתוח",inprogress:"בביצוע",closed:"סגור ומאומת"})[effectiveness.status]||"פתוח";
@@ -3345,6 +3460,14 @@ function renderCard(){
 
 function goStep(n){step=n;renderCard();autoSave();}
 function prevStep(){if(step>1){step--;renderCard();autoSave();}}
+function handleNextBtn(){
+  var b=document.getElementById('btn-next');
+  if(b&&b.disabled){
+    if(step===5)showUnaddressedPopup();
+    return;
+  }
+  nextStep();
+}
 function nextStep(){
   saveAllCurrentInputs();
   if(step===2){
@@ -3353,9 +3476,9 @@ function nextStep(){
     ruledOut=ruledOut.filter(k=>!emptyKeys.includes(k));
   }
   if(step===3&&focals.length===0)return;
-  if(step===4&&!rootCause.trim())return;
+  if(step===4&&!allRootCausesText().trim())return;
   if(step===4){
-    verdictSentence=rootCause;
+    verdictSentence=allRootCausesText();
     // Auto-populate root CAPA rows from focal factors (replace generic template rows)
     const existingSecondary=capaRows.filter(r=>r.srcKey&&!isFocalKey(r.srcKey));
     const focalRows=focals.map(f=>{
@@ -3367,7 +3490,7 @@ function nextStep(){
     capaRows=[...focalRows,...existingSecondary];
     autoSave();
   }
-  if(step===5&&!verdictSentence.trim())return;
+  if(step===5&&!allFocalsAddressed())return;
   if(step===5){
     // Check unaddressed factors
     const allF=[];
@@ -3409,14 +3532,10 @@ function showBlockModal(unhandled){
         <div style="font-size:13.5px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">הממצאים הבאים מ-5M טרם קיבלו מענה בתוכנית הפעולה.<br>יש להוסיף פעולה מיידית / תיקון / מונעת לכל אחד, או לתעד נימוק לאי-טיפול בשדה התיאור.</div>
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px">${items}</div>
       </div>
-      <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;gap:10px">
+      <div style="padding:16px 24px;border-top:1px solid var(--border-soft)">
         <button onclick="document.getElementById('block-modal-overlay').remove()"
-          style="flex:1;padding:11px 24px;background:var(--text);color:var(--surface);border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)">
-          חזור לטיפול
-        </button>
-        <button onclick="(function(){document.getElementById('block-modal-overlay').remove();if(step<8){step++;renderCard();autoSave();}})()"
-          style="flex:1;padding:11px 24px;background:var(--surface-2);color:var(--text-muted);border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)">
-          המשך בכל זאת ←
+          style="width:100%;padding:11px 24px;background:var(--text);color:var(--surface);border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)">
+          הבנתי – אחזור לטפל
         </button>
       </div>
     </div>`;
@@ -3429,14 +3548,15 @@ const LS_KEY = "5m_investigations";
 const LS_CURRENT = "5m_current_id";
 let currentInvId = null;
 let saveTimer = null;
+let _pendingDelId = null;
 
 function generateId(){return "inv_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);}
 
 function getStateSnapshot(){
   return {step,details:JSON.parse(JSON.stringify(details)),effectLabel,
     mData:JSON.parse(JSON.stringify(mData)),focals:JSON.parse(JSON.stringify(focals)),
-    ruledOut:[...ruledOut],verdictSentence,whys:[...whys],whyQs:[...whyQs],
-    rootCause,rootCauseOverride,timeline:JSON.parse(JSON.stringify(timeline)),ruledReasons:JSON.parse(JSON.stringify(window._ruledReasons||{})),dismissedFactors:JSON.parse(JSON.stringify(dismissedFactors)),capaRows:JSON.parse(JSON.stringify(capaRows)),
+    ruledOut:[...ruledOut],verdictSentence,whys:[...whys],whyQs:[...whyQs],perFocalWhyCount:[...perFocalWhyCount],
+    rootCauseOverride,timeline:JSON.parse(JSON.stringify(timeline)),ruledReasons:JSON.parse(JSON.stringify(window._ruledReasons||{})),dismissedFactors:JSON.parse(JSON.stringify(dismissedFactors)),capaRows:JSON.parse(JSON.stringify(capaRows)),
     effectiveness:JSON.parse(JSON.stringify(effectiveness)),capaNextId,
     execSummary:JSON.parse(JSON.stringify(execSummary)),
     annexes:JSON.parse(JSON.stringify(annexes)),nextId};
@@ -3452,8 +3572,23 @@ function applySnapshot(s){
   mData=s.mData||{man:[""],method:[""],measurement:[""],machine:[""],material:[""],environment:[""]};
   focals=s.focals||[];ruledOut=s.ruledOut||[];
   verdictSentence=s.verdictSentence||"";
-  whys=s.whys||["","","","",""];whyQs=s.whyQs||["","","","",""];
-  rootCause=s.rootCause||"";
+  // migrate old fi*5 format → new fi*MAX_WHYS format
+  const _nF=(s.focals||[]).length;
+  const _oldWhys=s.whys||[];
+  if(_nF>0 && _oldWhys.length>0 && _oldWhys.length<=_nF*5 && !s.perFocalWhyCount){
+    const nw=[],nq=[];
+    for(let fi=0;fi<_nF;fi++){
+      for(let i=0;i<MAX_WHYS;i++){
+        nw.push(i<5?(_oldWhys[fi*5+i]||''):'');
+        nq.push(i<5?((s.whyQs||[])[fi*5+i]||''):'');
+      }
+    }
+    whys=nw;whyQs=nq;perFocalWhyCount=Array.from({length:_nF},()=>5);
+  } else {
+    whys=_oldWhys.length?_oldWhys:[];
+    whyQs=(s.whyQs||[]).length?(s.whyQs):[];
+    perFocalWhyCount=s.perFocalWhyCount||(s.focals||[]).map(()=>5);
+  }
   rootCauseOverride=s.rootCauseOverride!==undefined?s.rootCauseOverride:null;
   window._ruledReasons=s.ruledReasons||{};
   dismissedFactors=s.dismissedFactors||{};
@@ -3518,6 +3653,8 @@ function showManager(){
   renderManagerBody();
 }
 function hideManager(){
+  _pendingDelId=null;
+  _pinClose();
   document.getElementById("mgr-overlay").style.display="none";
 }
 
@@ -3532,14 +3669,17 @@ function renderManagerBody(){
   let html="";
   list.forEach(inv=>{
     const isActive=inv.id===currentInvId;
-    html+=`<div class="inv-item${isActive?" active-inv":""}" onclick="loadInvestigation('${inv.id}')">
+    html+=`<div class="inv-item${isActive?" active-inv":""}" onclick="${isActive?`loadInvestigation('${inv.id}')`:`requirePin(()=>loadInvestigation('${inv.id}'),'פתיחת תחקיר')`}">
       <span class="inv-icon">🐟</span>
       <div class="inv-info">
         <div class="inv-title">${h(inv.title||"תחקיר ללא שם")}</div>
         <div class="inv-meta">נשמר: ${h(inv.savedAt||"")} ${inv.createdAt&&inv.createdAt!==inv.savedAt?"| נוצר: "+h(inv.createdAt):""}</div>
       </div>
       <span class="inv-step-badge">${STEP_LABELS[inv.step]||"שלב "+inv.step}</span>
-      ${isActive?`<span style="font-size:12px;color:var(--blue);font-weight:600;padding:2px 8px;background:var(--blue-dim);border-radius:20px">פתוח</span>`:`<button class="inv-del" onclick="event.stopPropagation();deleteInvestigation('${inv.id}')">מחק</button>`}
+      ${isActive
+        ? `<span style="font-size:12px;color:var(--blue);font-weight:600;padding:2px 8px;background:var(--blue-dim);border-radius:20px">פתוח</span>`
+        : `<button class="inv-del" onclick="event.stopPropagation();requirePin(()=>doDeleteInv('${inv.id}'),'מחיקת תחקיר')">מחק</button>`
+      }
     </div>`;
   });
   body.innerHTML=html;
@@ -3557,18 +3697,66 @@ function loadInvestigation(id){
   renderCard();
 }
 
+/* ── PIN ── */
+const PIN_KEY='inv_access_pin';
+const PIN_DEFAULT='LIRANOHAD';
+function getPin(){return localStorage.getItem(PIN_KEY)||PIN_DEFAULT;}
+
+function requirePin(callback,title){
+  title=title||'גישה מוגנת';
+  const overlay=document.createElement('div');
+  overlay.className='pin-overlay';
+  overlay.id='pin-overlay';
+  overlay.innerHTML=`<div class="pin-box">
+    <div class="pin-icon">🔒</div>
+    <h4>${h(title)}</h4>
+    <div class="pin-sub">הזן קוד גישה להמשך</div>
+    <div class="pin-input-wrap">
+      <input id="pin-field" type="password" placeholder="••••••" autocomplete="off" onkeydown="if(event.key==='Enter')_pinSubmit()">
+    </div>
+    <div class="pin-error" id="pin-err"></div>
+    <div class="pin-actions">
+      <button class="pin-btn-ok" onclick="_pinSubmit()">אישור</button>
+      <button class="pin-btn-cancel" onclick="_pinClose()">ביטול</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  window._pinCb=callback;
+  setTimeout(()=>{const f=document.getElementById('pin-field');if(f)f.focus();},60);
+}
+function _pinSubmit(){
+  const f=document.getElementById('pin-field');
+  if(!f)return;
+  if(f.value===getPin()){
+    _pinClose();
+    if(window._pinCb){const cb=window._pinCb;window._pinCb=null;cb();}
+  } else {
+    f.classList.remove('pin-shake');
+    void f.offsetWidth;
+    f.classList.add('pin-shake');
+    f.value='';
+    const err=document.getElementById('pin-err');
+    if(err)err.textContent='קוד שגוי — נסה שוב';
+    setTimeout(()=>f.classList.remove('pin-shake'),350);
+  }
+}
+function _pinClose(){
+  const el=document.getElementById('pin-overlay');
+  if(el)el.remove();
+  window._pinCb=null;
+}
+
+function doDeleteInv(id){
+  const list=loadAllInvestigations().filter(x=>x.id!==id);
+  saveAllInvestigations(list);
+  if(id===currentInvId){
+    if(list.length>0){currentInvId=list[0].id;applySnapshot(list[0].data);renderCard();}
+    else{startFreshInvestigation();}
+  }
+  renderManagerBody();
+}
 function deleteInvestigation(id){
-  showConfirm("מחיקת תחקיר","למחוק תחקיר זה לצמיתות? לא ניתן לשחזר.",
-    "מחק",()=>{
-      const list=loadAllInvestigations().filter(x=>x.id!==id);
-      saveAllInvestigations(list);
-      if(id===currentInvId){
-        // if deleted current, load another or start fresh
-        if(list.length>0){currentInvId=list[0].id;applySnapshot(list[0].data);renderCard();}
-        else{startFreshInvestigation();}
-      }
-      renderManagerBody();
-    },"#ef4444");
+  requirePin(()=>doDeleteInv(id),'מחיקת תחקיר');
 }
 
 function startFreshInvestigation(){
@@ -3579,8 +3767,8 @@ function startFreshInvestigation(){
   effectLabel="";
   mData={man:[""],method:[""],measurement:[""],machine:[""],material:[""],environment:[""]};
   focals=[];ruledOut=[];verdictSentence="";dismissedFactors={};
-  whys=["","","","",""];whyQs=["","","","",""];
-  rootCause="";rootCauseOverride=null;
+  whys=[];whyQs=[];perFocalWhyCount=[];
+  rootCauseOverride=null;
   capaRows=[
     {id:1,type:"פעולה מיידית",desc:"",responsible:"",deadline:"",srcKey:"",srcFactor:""},
     {id:2,type:"פעולה מתקנת",desc:"",responsible:"",deadline:"",srcKey:"",srcFactor:""},
@@ -3678,8 +3866,7 @@ const DEMO_SNAPSHOT={
     "אין תהליך מוגדר לעדכון נהלים בעקבות ממצאי תחקירים קודמים.",
     "חסר מנגנון ניהול שינויים (Change Control) המחבר בין עדכוני יצרן לנהלים פנימיים."
   ],
-  rootCause:"היעדר מנגנון ניהול שינויים מובנה המסנכרן בין עדכוני מפרטי יצרן יצרן לנהלי הבדיקה הפנימיים.",
-  rootCauseOverride:"היעדר מנגנון ניהול שינויים מובנה המסנכרן בין עדכוני מפרטי יצרן יצרן לנהלי הבדיקה הפנימיים.",
+  rootCauseOverride:"היעדר מנגנון ניהול שינויים מובנה המסנכרן בין עדכוני מפרטי יצרן לנהלי הבדיקה הפנימיים.",
   timeline:[
     {time:"2025-03-10T09:30",desc:"בדיקת קושיות שגרתית – נמדדו ערכים חריגים (42 Shore A, מינ 65)",actor:"טכנאי מבדקה"},
     {time:"2025-03-10T10:00",desc:"דיווח לממונה מעבדה – האצווה נעצרה מיידית",actor:"טכנאי מבדקה"},
@@ -3721,4 +3908,3 @@ const DEMO_SNAPSHOT={
 
 
 </body></html>
-תעלה אותו 
